@@ -1,0 +1,56 @@
+.betting-settings {
+  width: 300px;
+  height: 650px;
+  background-color: #2c2f30;
+  padding: 20px;
+  font-weight: bolder;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  box-shadow: rgba(0, 0, 0, 0.2)
+  color: #fff;
+}
+
+#multiplier {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: #3b444b;
+    color: #fff;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #b5b5b5; 
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+input[type="number"] {
+  width: 165px;
+  padding: 10px;
+  border: 1px solid #3b444b; 
+  border-radius: 4px;
+  background-color: #414a4c; 
+  color: #fff;
+  font-size: 16px;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #3b444b; 
+  border-radius: 4px;
+  background-color: #414a4c;
+  color: #fff;
+  font-size: 16px;
+}
+
