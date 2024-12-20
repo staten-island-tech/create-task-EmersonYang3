@@ -4,9 +4,10 @@ html, body {
   font-family: 'proxima-nova', sans-serif;
   background-color: #0e1111; 
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
-  height: 100vh;
+  margin-top: 10px;
 }
 
 .main-container {
