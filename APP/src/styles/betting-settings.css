@@ -10,13 +10,13 @@
   color: #fff;
 }
 
-#multiplier {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    background-color: #3b444b;
-    color: #fff;
+#total-profit {
+  padding: 13px 15px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #3b444b;
+  color: #fff;
 }
 
 label {

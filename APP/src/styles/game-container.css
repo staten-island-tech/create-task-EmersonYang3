@@ -17,6 +17,7 @@
 }
 
 .mine {
+    border-radius: 10px;
     background-color: rgb(47, 69, 83);
     width: 110px;
     height: 110px;
@@ -25,7 +26,7 @@
 }
 
 .mine:hover {
-    transform: translateY(-2px); 
+    transform: translateY(-5px); 
     z-index: 1; 
     background-color: rgb(85, 112, 134);
 }
