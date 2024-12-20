@@ -10,20 +10,29 @@
   color: #fff;
 }
 
-#total-profit {
-  padding: 13px 15px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  background-color: #3b444b;
-  color: #fff;
-}
+
 
 label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 2px;
   font-size: 14px;
   color: #b5b5b5; 
+}
+
+
+#total-payout {;
+  margin-top: 2px;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #353c3d; 
+  border: 2px solid #3b444b; 
+  color: #fff;
+  padding: 10px;
+  transition: border 0.15s cubic-bezier(0.4, 0, 0.2, 1)
+}
+
+#total-payout:hover {
+  border: 2px solid #515c5f;
 }
 
 .input-wrap {
@@ -35,22 +44,41 @@ label {
 
 input[type="number"] {
   width: 165px;
-  padding: 10px;
-  border: 1px solid #3b444b; 
+  padding: 9px;
+  border: 2px solid #3b444b; 
   border-radius: 4px;
-  background-color: #414a4c; 
+  background-color: #353c3d; 
   color: #fff;
   font-size: 16px;
+  transition: border 0.15s cubic-bezier(0.4, 0, 0.2, 1)
 }
 
 select {
   width: 100%;
-  padding: 10px;
+  padding: 9px;
   margin-bottom: 20px;
-  border: 1px solid #3b444b; 
+  border: 2px solid #3b444b; 
   border-radius: 4px;
-  background-color: #414a4c;
+  background-color: #353c3d; 
   color: #fff;
   font-size: 16px;
+  transition: border 0.15s cubic-bezier(0.4, 0, 0.2, 1)
 }
 
+input[type="number"]:hover{
+  border: 2px solid #515c5f; 
+}
+
+input[type="number"]:focus{
+  outline: none;
+  border: 2px solid #515c5f; 
+}
+
+select:hover {
+  border: 2px solid #515c5f;
+}
+
+select:focus {
+  outline: none;
+  border: 2px solid #515c5f;
+}

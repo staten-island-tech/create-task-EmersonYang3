@@ -8,6 +8,7 @@ button {
 }
 
 #halve-bet, #double-bet {
+  padding: 10px 15px;
   background-color: #3b444b;
   color: #fff;
 }

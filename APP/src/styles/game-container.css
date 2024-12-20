@@ -2,7 +2,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #1e1e1e; 
+    background-color: rgb(30, 33, 36); 
     height: 650px;
     width: 900px;
     padding: 20px;
@@ -12,7 +12,7 @@
     display: grid;
     grid-template-columns: repeat(5, 100px);
     grid-template-rows: repeat(5, 100px); 
-    gap: 35px;
+    gap: 33px;
     justify-self: center;
 }
 
@@ -22,7 +22,7 @@
     width: 115px;
     height: 115px;
     transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-    border-bottom: 5px solid rgb(23, 33, 40); 
+    border-bottom: 7px solid rgb(28, 39, 48); 
 }
 
 .mine:hover {
