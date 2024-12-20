@@ -22,7 +22,7 @@
     width: 115px;
     height: 115px;
     transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-    border-bottom: 7px solid rgb(28, 39, 48); 
+    box-shadow: 0 7px 0 rgb(28, 39, 48);
 }
 
 .mine:hover {
