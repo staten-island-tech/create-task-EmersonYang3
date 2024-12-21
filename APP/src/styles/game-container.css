@@ -8,29 +8,69 @@
     padding: 20px;
 }
 
-.mines-container {
+.present-container {
     display: grid;
     grid-template-columns: repeat(5, 100px);
     grid-template-rows: repeat(5, 100px); 
-    gap: 33px;
+    gap: 30px;
     justify-self: center;
 }
 
-.mine {
+.present {
     border-radius: 10px;
-    background-color: rgb(47, 69, 83);
     width: 115px;
     height: 115px;
-    transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 7px 0 rgb(28, 39, 48);
+    background: none;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    background-size: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url("../images/present.png");
 }
 
-.mine:hover {
+.present:hover {
     transform: translateY(-5px); 
-    z-index: 1; 
-    background-color: rgb(85, 112, 134);
 }
 
-.mine:active {
-    transform: translateY(0);
+.present:active {
+    transform: translateY(0px); 
+}
+
+@keyframes hide {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes reveal {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.present.hide {
+    animation: hide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.present.reveal {
+    animation: reveal 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.present.presented:hover,
+.present.presented.hide, .present.presented.reveal {
+    cursor: default;
+    transform: none;
+    animation: none;
 }

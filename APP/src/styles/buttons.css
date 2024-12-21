@@ -7,6 +7,17 @@ button {
   transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+button.disabled {
+  pointer-events: none;
+  opacity: 0.6; 
+}
+
+button.disabled:hover,
+button.disabled:active {
+  background-color: initial;
+  transform: none;
+}
+
 #halve-bet, #double-bet {
   padding: 10px 15px;
   background-color: #3b444b;
