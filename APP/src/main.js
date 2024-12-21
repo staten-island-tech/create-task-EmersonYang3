@@ -3,6 +3,7 @@ const configs = {
   defaultCoal: 3,
   defaultBalance: 1000.0,
   safePresentImage: "images/",
+  coalImage: "images/",
 };
 
 const DOMSelectors = {
@@ -18,12 +19,12 @@ const DOMSelectors = {
 let gameStatus = {
   betAmount: configs.minimumBet,
   coalAmount: configs.defaultCoal,
+  balance: configs.defaultBalance,
   board: [],
 };
 
 function applyConfigs() {
   DOMSelectors.numberOfCoalField.value = configs.defaultCoal;
-  DOMSelectors.betAmountField.value = configs.minimumBet.toFixed(2);
 }
 
 const betSettingService = {
@@ -32,27 +33,26 @@ const betSettingService = {
       input === "" || input < configs.minimumBet
         ? configs.minimumBet
         : parseFloat(input);
-    gameStatus.betAmount = betAmount;
-    DOMSelectors.betAmountField.value = betAmount.toFixed(2);
+
+    gameStatus.betAmount = Math.min(betAmount, gameStatus.balance);
+    DOMSelectors.betAmountField.value = gameStatus.betAmount.toFixed(2);
   },
 
   adjustBet(factor) {
-    const { betAmount } = gameStatus;
-    if (!betAmount) return;
-    const adjustedBet = betAmount * factor;
-    gameStatus.betAmount = adjustedBet;
-    DOMSelectors.betAmountField.value = adjustedBet.toFixed(2);
+    const adjustedBet = gameStatus.betAmount * factor;
+    gameStatus.betAmount = Math.max(
+      configs.minimumBet,
+      Math.min(adjustedBet, gameStatus.balance)
+    );
+    DOMSelectors.betAmountField.value = gameStatus.betAmount.toFixed(2);
   },
 
   minesInput(input) {
-    const minesAmount = input < 0 ? 0 : parseInt(input, 10);
-    gameStatus.coalAmount = minesAmount;
-    DOMSelectors.numberOfCoalField.value = minesAmount;
+    gameStatus.coalAmount = Math.max(0, parseInt(input, 10));
+    DOMSelectors.numberOfCoalField.value = gameStatus.coalAmount;
   },
 
   betStart() {
-    const { betAmount } = gameStatus;
-    if (!betAmount) return;
     [
       "betAmountField",
       "numberOfCoalField",
@@ -62,6 +62,8 @@ const betSettingService = {
     ].forEach((id) => {
       DOMSelectors[id].disabled = true;
     });
+
+    DOMSelectors.betButton.textContent = "Leave The Factory...";
   },
 };
 
