@@ -96,18 +96,30 @@ const balanceService = {
 };
 
 const gameBoardService = {
-  populateCoals() {
+  populateCoals(coalAmount) {
+    if (coalAmount < 1) {
+      alert(
+        "A invalid coal amount has been passed in! Please try again with a valid number or refresh the page."
+      );
+    }
+
     gameStatus.board = [];
 
     for (let i = 0; i < 25; i++) {
-      if (i < gameStatus.coalAmount) {
+      if (i < coalAmount) {
         gameStatus.board.push(1);
       } else {
         gameStatus.board.push(0);
       }
     }
 
-    gameStatus.board = gameStatus.board.sort(() => 0.5 - Math.random());
+    for (let i = gameStatus.board.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      const temp = gameStatus.board[i];
+      gameStatus.board[i] = gameStatus.board[j];
+      gameStatus.board[j] = temp;
+    }
 
     Array.from(DOMSelectors.presentContainer.children).forEach((button, i) => {
       button.style.backgroundImage = `url(${configs.presentImage})`;
@@ -152,7 +164,7 @@ const gameBoardService = {
   revealAllPresent() {
     DOMSelectors.betButton.removeEventListener(
       "click",
-      betSettingService.betStart
+      betSettingService.betButtonEvent
     );
 
     Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
@@ -164,7 +176,7 @@ const gameBoardService = {
     setTimeout(() => {
       DOMSelectors.betButton.addEventListener(
         "click",
-        betSettingService.betStart
+        betSettingService.betButtonEvent
       );
     }, 800);
   },
@@ -214,7 +226,7 @@ const betSettingService = {
     DOMSelectors.numberOfCoalField.value = gameStatus.coalAmount;
   },
 
-  betStart() {
+  betButtonEvent() {
     if (
       !gameStatus.betAmount ||
       gameStatus.betAmount.toFixed(2) <= configs.minimumBet
@@ -243,7 +255,7 @@ const betSettingService = {
       )}`;
       DOMSelectors.betButton.textContent = "Leave The Factory...";
       gameStatus.gameInSession = true;
-      gameBoardService.populateCoals();
+      gameBoardService.populateCoals(gameStatus.coalAmount);
       balanceService.refreshWin();
     } else {
       gameStatus.gameInSession = false;
@@ -267,7 +279,10 @@ function attachListeners() {
     betSettingService.adjustBet(2)
   );
   DOMSelectors.betAmountField.addEventListener("blur", handleBetInput);
-  DOMSelectors.betButton.addEventListener("click", betSettingService.betStart);
+  DOMSelectors.betButton.addEventListener(
+    "click",
+    betSettingService.betButtonEvent
+  );
   DOMSelectors.numberOfCoalField.addEventListener("input", (event) =>
     betSettingService.minesInput(event.target.value)
   );
