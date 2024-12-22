@@ -1,16 +1,15 @@
 .betting-settings {
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
   height: 650px;
   background-color: #2c2f30;
   padding: 20px;
   font-weight: bolder;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
-  box-shadow: rgba(0, 0, 0, 0.2)
+  box-shadow: rgba(0, 0, 0, 0.2);
   color: #fff;
 }
-
-
 
 label {
   display: block;
@@ -82,4 +81,12 @@ select:hover {
 select:focus {
   outline: none;
   border: 2px solid #515c5f;
+}
+
+@media (max-width: 768px) {
+  .betting-settings {
+    width: 90%;
+    margin-bottom: 20px;
+    border-radius: 4px;
+  }
 }
