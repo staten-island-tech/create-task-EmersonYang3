@@ -32,55 +32,152 @@ let gameStatus = {
 };
 
 function applyConfigs() {
-  DOMSelectors.balance.textContent =
-    "Balance: $" + configs.defaultBalance.toFixed(2);
+  DOMSelectors.balance.textContent = `Balance: $${configs.defaultBalance.toFixed(
+    2
+  )}`;
   DOMSelectors.numberOfCoalField.value = configs.defaultCoal;
 }
+
+const balanceService = {
+  refreshWin() {
+    const totalCells = 25;
+    const minesCount = gameStatus.coalPresentsLeft;
+    const safeCellsCount = totalCells - minesCount;
+    const uncoveredSafeCells = safeCellsCount - gameStatus.safePresentsLeft;
+
+    function binomialCoefficient(total, choose) {
+      if (choose > total) return 0;
+      if (choose === 0 || choose === total) return 1;
+      let coefficient = 1;
+      for (let i = 1; i <= choose; i++) {
+        coefficient *= (total - i + 1) / i;
+      }
+      return coefficient;
+    }
+
+    const totalUncoveredCombinations = binomialCoefficient(
+      totalCells,
+      uncoveredSafeCells
+    );
+    const safeUncoveredCombinations = binomialCoefficient(
+      safeCellsCount,
+      uncoveredSafeCells
+    );
+
+    const payoutMultiplier =
+      (totalUncoveredCombinations / safeUncoveredCombinations) *
+      (1 - configs.houseEdge);
+
+    gameStatus.winMultiplier = payoutMultiplier;
+    gameStatus.winAmount = gameStatus.betAmount * gameStatus.winMultiplier;
+
+    DOMSelectors.winField.textContent = `$ ${gameStatus.winAmount.toFixed(
+      2
+    )} (${gameStatus.winMultiplier.toFixed(2)}x)`;
+  },
+
+  cashOut() {
+    gameStatus.balance += gameStatus.winAmount;
+    DOMSelectors.balance.textContent = `Balance: $${gameStatus.balance.toFixed(
+      2
+    )}`;
+    gameStatus.gameInSession = false;
+    [
+      "betAmountField",
+      "numberOfCoalField",
+      "halfBetButton",
+      "doubleBetButton",
+    ].forEach((id) => {
+      DOMSelectors[id].disabled = false;
+    });
+
+    DOMSelectors.betButton.textContent = "Open Presents!";
+  },
+};
 
 const gameBoardService = {
   populateCoals() {
     gameStatus.board = [];
-    gameStatus.coalPresentsLeft = 0;
-    gameStatus.safePresentsLeft = 0;
 
-    for (let i = 0; i < gameStatus.coalAmount; i++) {
-      gameStatus.board.push(1);
-      gameStatus.coalPresentsLeft++;
-    }
-
-    while (gameStatus.board.length < 25) {
-      gameStatus.board.push(0);
-      gameStatus.safePresentsLeft++;
-    }
-
-    for (let i = gameStatus.board.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [gameStatus.board[i], gameStatus.board[j]] = [
-        gameStatus.board[j],
-        gameStatus.board[i],
-      ];
-    }
-
-    for (let i = 0; i < gameStatus.board.length; i++) {
-      const button = document.getElementById((i + 1).toString());
-      button.style.backgroundImage = `url(${configs.presentImage})`;
-      button.classList.remove("reveal", "presented", "coal", "safe");
-      if (gameStatus.board[i] === 1) {
-        button.classList.add("coal");
+    for (let i = 0; i < 25; i++) {
+      if (i < gameStatus.coalAmount) {
+        gameStatus.board.push(1);
       } else {
-        button.classList.add("safe");
+        gameStatus.board.push(0);
       }
     }
+
+    gameStatus.board = gameStatus.board.sort(() => 0.5 - Math.random());
+
+    Array.from(DOMSelectors.presentContainer.children).forEach((button, i) => {
+      button.style.backgroundImage = `url(${configs.presentImage})`;
+      button.classList.remove("reveal", "presented", "coal", "done");
+      if (gameStatus.board[i] === 1) {
+        button.classList.add("coal");
+      }
+    });
   },
 
-  revealPresent(presentID) {
-    return gameStatus.board[presentID - 1] === 1;
+  revealPresent(present, skipGameLogic = false) {
+    if (!gameStatus.gameInSession && !skipGameLogic) return;
+
+    present.classList.add("hide");
+    if (!skipGameLogic && present.classList.contains("coal")) {
+      gameStatus.gameInSession = false;
+    }
+
+    setTimeout(() => {
+      present.style.backgroundImage = `url(${
+        present.classList.contains("coal")
+          ? configs.coalImage
+          : configs.safePresentImage
+      })`;
+      if (!skipGameLogic && !present.classList.contains("coal")) {
+        gameStatus.safePresentsLeft -= 1;
+        balanceService.refreshWin();
+      }
+      if (!skipGameLogic && present.classList.contains("coal")) {
+        gameBoardService.loseGame();
+      }
+      present.classList.remove("hide");
+      present.classList.add("reveal");
+    }, 375);
+
+    setTimeout(() => {
+      present.classList.remove("reveal");
+      present.classList.add("presented");
+    }, 775);
+  },
+
+  revealAllPresent() {
+    DOMSelectors.betButton.removeEventListener(
+      "click",
+      betSettingService.betStart
+    );
+
+    Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
+      this.revealPresent(present, true);
+      present.classList.remove("done");
+      present.classList.remove("presented");
+    });
+
+    setTimeout(() => {
+      DOMSelectors.betButton.addEventListener(
+        "click",
+        betSettingService.betStart
+      );
+    }, 800);
   },
 
   loseGame() {
-    DOMSelectors.numberOfCoalField.disabled = false;
-    DOMSelectors.betAmountField.disabled = false;
+    ["betAmountField", "numberOfCoalField"].forEach((id) => {
+      DOMSelectors[id].disabled = false;
+    });
+    DOMSelectors.winField.textContent = "You got coal! (0.00x)";
     DOMSelectors.betButton.textContent = "Open Presents!";
+
+    this.revealAllPresent();
+
     gameStatus.gameInSession = false;
     [
       "betAmountField",
@@ -99,7 +196,6 @@ const betSettingService = {
       input === "" || input < configs.minimumBet
         ? configs.minimumBet
         : parseFloat(input);
-
     gameStatus.betAmount = Math.min(betAmount, gameStatus.balance);
     DOMSelectors.betAmountField.value = gameStatus.betAmount.toFixed(2);
   },
@@ -119,7 +215,11 @@ const betSettingService = {
   },
 
   betStart() {
-    if (!gameStatus.betAmount) return;
+    if (
+      !gameStatus.betAmount ||
+      gameStatus.betAmount.toFixed(2) <= configs.minimumBet
+    )
+      return;
 
     if (!gameStatus.gameInSession) {
       if (gameStatus.balance < gameStatus.betAmount) {
@@ -138,12 +238,17 @@ const betSettingService = {
 
       gameStatus.balance -= gameStatus.betAmount;
       gameStatus.safePresentsLeft = 25 - gameStatus.coalAmount;
-      DOMSelectors.balance.textContent =
-        "Balance: $" + gameStatus.balance.toFixed(2);
+      DOMSelectors.balance.textContent = `Balance: $${gameStatus.balance.toFixed(
+        2
+      )}`;
       DOMSelectors.betButton.textContent = "Leave The Factory...";
       gameStatus.gameInSession = true;
       gameBoardService.populateCoals();
-      return;
+      balanceService.refreshWin();
+    } else {
+      gameStatus.gameInSession = false;
+      balanceService.cashOut();
+      gameBoardService.revealAllPresent();
     }
   },
 };
@@ -169,36 +274,16 @@ function attachListeners() {
 
   Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
     present.addEventListener("click", (event) => {
-      if (!gameStatus.gameInSession) return;
-
-      present.classList.add("hide");
-      if (present.classList.contains("coal")) {
-        gameStatus.gameInSession = false;
-      }
-
-      setTimeout(() => {
-        present.classList.remove("hide");
-
-        if (present.classList.contains("coal")) {
-          present.style.backgroundImage = `url(${configs.coalImage})`;
-          gameBoardService.loseGame();
-        } else {
-          gameStatus.safePresentsLeft -= 1;
-          present.style.backgroundImage = `url(${configs.safePresentImage})`;
-        }
-        present.classList.add("reveal");
-      }, 400);
-
-      setTimeout(() => {
-        present.classList.add("presented");
-      }, 800);
+      if (
+        present.classList.contains("presented") ||
+        present.classList.contains("done")
+      )
+        return;
+      present.classList.add("done");
+      gameBoardService.revealPresent(present);
     });
   });
 }
 
-function main() {
-  applyConfigs();
-  attachListeners();
-}
-
-main();
+applyConfigs();
+attachListeners();
