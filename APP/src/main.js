@@ -96,35 +96,30 @@ const balanceService = {
 };
 
 const gameBoardService = {
-  populateCoals(coalAmount) {
-    if (coalAmount < 1) {
-      alert(
-        "A invalid coal amount has been passed in! Please try again with a valid number or refresh the page."
-      );
-    }
-
-    gameStatus.board = [];
+  populateCoals(coalAmount, gameBoard) {
+    gameBoard.length = 0;
 
     for (let i = 0; i < 25; i++) {
       if (i < coalAmount) {
-        gameStatus.board.push(1);
+        gameBoard.push(1);
       } else {
-        gameStatus.board.push(0);
+        gameBoard.push(0);
       }
     }
 
-    for (let i = gameStatus.board.length - 1; i > 0; i--) {
+    // Shuffle the gameBoard
+    for (let i = gameBoard.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-
-      const temp = gameStatus.board[i];
-      gameStatus.board[i] = gameStatus.board[j];
-      gameStatus.board[j] = temp;
+      [gameBoard[i], gameBoard[j]] = [gameBoard[j], gameBoard[i]];
     }
+
+    gameStatus.coalPresentsLeft = coalAmount;
+    gameStatus.safePresentsLeft = 25 - coalAmount;
 
     Array.from(DOMSelectors.presentContainer.children).forEach((button, i) => {
       button.style.backgroundImage = `url(${configs.presentImage})`;
       button.classList.remove("reveal", "presented", "coal", "done");
-      if (gameStatus.board[i] === 1) {
+      if (gameBoard[i] === 1) {
         button.classList.add("coal");
       }
     });
@@ -255,7 +250,7 @@ const betSettingService = {
       )}`;
       DOMSelectors.betButton.textContent = "Leave The Factory...";
       gameStatus.gameInSession = true;
-      gameBoardService.populateCoals(gameStatus.coalAmount);
+      gameBoardService.populateCoals(gameStatus.coalAmount, gameStatus.board);
       balanceService.refreshWin();
     } else {
       gameStatus.gameInSession = false;
