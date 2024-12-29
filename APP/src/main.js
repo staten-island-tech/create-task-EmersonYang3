@@ -19,6 +19,8 @@ const DOMSelectors = {
   balance: document.getElementById("balance"),
 };
 
+const TOTAL_CELLS = 25;
+
 let gameStatus = {
   gameInSession: false,
   betAmount: configs.minimumBet,
@@ -36,13 +38,22 @@ function applyConfigs() {
     2
   )}`;
   DOMSelectors.numberOfCoalField.value = configs.defaultCoal;
+  Array.from(DOMSelectors.presentContainer.children).forEach((button) => {
+    button.style.backgroundImage = `url(${configs.presentImage})`;
+  });
+}
+
+function setElementsDisabled(disabled) {
+  DOMSelectors.betAmountField.disabled = disabled;
+  DOMSelectors.numberOfCoalField.disabled = disabled;
+  DOMSelectors.halfBetButton.disabled = disabled;
+  DOMSelectors.doubleBetButton.disabled = disabled;
 }
 
 const balanceService = {
   refreshWin() {
-    const totalCells = 25;
     const minesCount = gameStatus.coalPresentsLeft;
-    const safeCellsCount = totalCells - minesCount;
+    const safeCellsCount = TOTAL_CELLS - minesCount;
     const uncoveredSafeCells = safeCellsCount - gameStatus.safePresentsLeft;
 
     function binomialCoefficient(total, choose) {
@@ -56,7 +67,7 @@ const balanceService = {
     }
 
     const totalUncoveredCombinations = binomialCoefficient(
-      totalCells,
+      TOTAL_CELLS,
       uncoveredSafeCells
     );
     const safeUncoveredCombinations = binomialCoefficient(
@@ -71,7 +82,7 @@ const balanceService = {
     gameStatus.winMultiplier = payoutMultiplier;
     gameStatus.winAmount = gameStatus.betAmount * gameStatus.winMultiplier;
 
-    DOMSelectors.winField.textContent = `$ ${gameStatus.winAmount.toFixed(
+    DOMSelectors.winField.textContent = `$${gameStatus.winAmount.toFixed(
       2
     )} (${gameStatus.winMultiplier.toFixed(2)}x)`;
   },
@@ -82,15 +93,7 @@ const balanceService = {
       2
     )}`;
     gameStatus.gameInSession = false;
-    [
-      "betAmountField",
-      "numberOfCoalField",
-      "halfBetButton",
-      "doubleBetButton",
-    ].forEach((id) => {
-      DOMSelectors[id].disabled = false;
-    });
-
+    setElementsDisabled(false);
     DOMSelectors.betButton.textContent = "Open Presents!";
   },
 };
@@ -99,7 +102,7 @@ const gameBoardService = {
   populateCoals(coalAmount, gameBoard) {
     gameBoard.length = 0;
 
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < TOTAL_CELLS; i++) {
       if (i < coalAmount) {
         gameBoard.push(1);
       } else {
@@ -107,43 +110,40 @@ const gameBoardService = {
       }
     }
 
-    // Shuffle the gameBoard
     for (let i = gameBoard.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [gameBoard[i], gameBoard[j]] = [gameBoard[j], gameBoard[i]];
     }
 
     gameStatus.coalPresentsLeft = coalAmount;
-    gameStatus.safePresentsLeft = 25 - coalAmount;
+    gameStatus.safePresentsLeft = TOTAL_CELLS - coalAmount;
 
     Array.from(DOMSelectors.presentContainer.children).forEach((button, i) => {
       button.style.backgroundImage = `url(${configs.presentImage})`;
-      button.classList.remove("reveal", "presented", "coal", "done");
-      if (gameBoard[i] === 1) {
-        button.classList.add("coal");
-      }
+      button.classList.remove("reveal", "presented", "done");
     });
   },
 
   revealPresent(present, skipGameLogic = false) {
+    const index = parseInt(present.id, 10);
     if (!gameStatus.gameInSession && !skipGameLogic) return;
 
     present.classList.add("hide");
-    if (!skipGameLogic && present.classList.contains("coal")) {
+    if (!skipGameLogic && gameStatus.board[index] === 1) {
       gameStatus.gameInSession = false;
     }
 
     setTimeout(() => {
       present.style.backgroundImage = `url(${
-        present.classList.contains("coal")
+        gameStatus.board[index] === 1
           ? configs.coalImage
           : configs.safePresentImage
       })`;
-      if (!skipGameLogic && !present.classList.contains("coal")) {
+      if (!skipGameLogic && gameStatus.board[index] !== 1) {
         gameStatus.safePresentsLeft -= 1;
         balanceService.refreshWin();
       }
-      if (!skipGameLogic && present.classList.contains("coal")) {
+      if (!skipGameLogic && gameStatus.board[index] === 1) {
         gameBoardService.loseGame();
       }
       present.classList.remove("hide");
@@ -164,7 +164,6 @@ const gameBoardService = {
 
     Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
       this.revealPresent(present, true);
-      present.classList.remove("done");
       present.classList.remove("presented");
     });
 
@@ -177,23 +176,14 @@ const gameBoardService = {
   },
 
   loseGame() {
-    ["betAmountField", "numberOfCoalField"].forEach((id) => {
-      DOMSelectors[id].disabled = false;
-    });
+    setElementsDisabled(false);
     DOMSelectors.winField.textContent = "You got coal! (0.00x)";
     DOMSelectors.betButton.textContent = "Open Presents!";
 
     this.revealAllPresent();
 
     gameStatus.gameInSession = false;
-    [
-      "betAmountField",
-      "numberOfCoalField",
-      "halfBetButton",
-      "doubleBetButton",
-    ].forEach((id) => {
-      DOMSelectors[id].disabled = false;
-    });
+    setElementsDisabled(false);
   },
 };
 
@@ -234,17 +224,10 @@ const betSettingService = {
         return;
       }
 
-      [
-        "betAmountField",
-        "numberOfCoalField",
-        "halfBetButton",
-        "doubleBetButton",
-      ].forEach((id) => {
-        DOMSelectors[id].disabled = true;
-      });
+      setElementsDisabled(true);
 
       gameStatus.balance -= gameStatus.betAmount;
-      gameStatus.safePresentsLeft = 25 - gameStatus.coalAmount;
+      gameStatus.safePresentsLeft = TOTAL_CELLS - gameStatus.coalAmount;
       DOMSelectors.balance.textContent = `Balance: $${gameStatus.balance.toFixed(
         2
       )}`;
@@ -283,10 +266,11 @@ function attachListeners() {
   );
 
   Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
-    present.addEventListener("click", (event) => {
+    present.addEventListener("click", () => {
       if (
         present.classList.contains("presented") ||
-        present.classList.contains("done")
+        present.classList.contains("done") ||
+        !gameStatus.gameInSession
       )
         return;
       present.classList.add("done");
