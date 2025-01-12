@@ -169,8 +169,9 @@ const gameBoardService = {
     );
 
     Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
-      this.revealPresent(present, true);
-      present.classList.remove("presented");
+      if (!gameStatus.revealedPresents.has(parseInt(present.id, 10))) {
+        this.revealPresent(present, true);
+      }
     });
 
     setTimeout(() => {
