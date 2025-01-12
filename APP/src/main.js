@@ -110,7 +110,11 @@ const gameBoardService = {
     gameStatus.revealedPresents.clear();
 
     for (let i = 0; i < TOTAL_CELLS; i++) {
-      gameBoard.push(i < coalAmount ? 1 : 0);
+      if (i < coalAmount) {
+        gameBoard.push(1);
+      } else {
+        gameBoard.push(0);
+      }
     }
 
     for (let i = gameBoard.length - 1; i > 0; i--) {
