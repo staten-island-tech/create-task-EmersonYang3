@@ -1,10 +1,15 @@
+// Image sources from Pixabay (Free for use under Pixabay Content License):
+// Treasure chest: pixabay.com/vectors/treasure-khajana-gold-gold-coins-5193772/
+// Present box: pixabay.com/vectors/present-box-gift-ribbon-wrapped-307775/
+// Coal Image: pixabay.com/vectors/stone-rock-slab-marble-black-coal-8694303/
+
 const configs = {
   minimumBet: 0.0,
   defaultCoal: 3,
   houseEdge: 0.02,
   defaultBalance: 1000.0,
-  safePresentImage: "src/images/money.png",
-  coalImage: "src/images/coal_pile.png",
+  safePresentImage: "src/images/treasure_chest.png",
+  coalImage: "src/images/coal.png",
   presentImage: "src/images/present.png",
 };
 
@@ -31,6 +36,7 @@ let gameStatus = {
   safePresentsLeft: 0,
   coalPresentsLeft: 0,
   board: [],
+  revealedPresents: new Set(),
 };
 
 function applyConfigs() {
@@ -101,13 +107,10 @@ const balanceService = {
 const gameBoardService = {
   populateCoals(coalAmount, gameBoard) {
     gameBoard.length = 0;
+    gameStatus.revealedPresents.clear();
 
     for (let i = 0; i < TOTAL_CELLS; i++) {
-      if (i < coalAmount) {
-        gameBoard.push(1);
-      } else {
-        gameBoard.push(0);
-      }
+      gameBoard.push(i < coalAmount ? 1 : 0);
     }
 
     for (let i = gameBoard.length - 1; i > 0; i--) {
@@ -118,17 +121,20 @@ const gameBoardService = {
     gameStatus.coalPresentsLeft = coalAmount;
     gameStatus.safePresentsLeft = TOTAL_CELLS - coalAmount;
 
-    Array.from(DOMSelectors.presentContainer.children).forEach((button, i) => {
+    Array.from(DOMSelectors.presentContainer.children).forEach((button) => {
       button.style.backgroundImage = `url(${configs.presentImage})`;
-      button.classList.remove("reveal", "presented", "done");
+      button.classList.remove("reveal", "presented");
     });
   },
 
   revealPresent(present, skipGameLogic = false) {
     const index = parseInt(present.id, 10);
     if (!gameStatus.gameInSession && !skipGameLogic) return;
+    if (gameStatus.revealedPresents.has(index)) return;
 
+    gameStatus.revealedPresents.add(index);
     present.classList.add("hide");
+
     if (!skipGameLogic && gameStatus.board[index] === 1) {
       gameStatus.gameInSession = false;
     }
@@ -268,12 +274,10 @@ function attachListeners() {
   Array.from(DOMSelectors.presentContainer.children).forEach((present) => {
     present.addEventListener("click", () => {
       if (
-        present.classList.contains("presented") ||
-        present.classList.contains("done") ||
-        !gameStatus.gameInSession
+        !gameStatus.gameInSession ||
+        gameStatus.revealedPresents.has(parseInt(present.id, 10))
       )
         return;
-      present.classList.add("done");
       gameBoardService.revealPresent(present);
     });
   });
